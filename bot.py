@@ -1,18 +1,20 @@
 """
-Crypto Signal Bot - Telegram
-Deploy free on render.com
+Crypto Signal Bot - Telegram (Flask + Webhook)
+Deploy on Render with webhook
 """
 
 import os
-import asyncio
+from flask import Flask, request, jsonify
 from telegram import Update
-from telegram.ext import Application, CommandHandler, ContextTypes
+from telegram.ext import Application, CommandHandler, ContextTypes, CallbackContext
 import ccxt
 import pandas as pd
 import numpy as np
 
 # Config
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+
+app = Flask(__name__)
 
 # Initialize exchange
 exchange = ccxt.binance({
@@ -21,6 +23,9 @@ exchange = ccxt.binance({
 })
 
 PAIRS = ['BTC/USDT', 'ETH/USDT', 'SOL/USDT', 'BNB/USDT', 'XRP/USDT', 'ADA/USDT', 'DOGE/USDT']
+
+# Global application
+application = None
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
@@ -91,21 +96,32 @@ async def subscribe_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Contact @yourhandle"
     )
 
-async def post_init(app):
-    """Run after initialization"""
-    print("✅ Bot initialized successfully")
-
-def main():
-    app = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
+@app.route('/webhook', methods=['POST'])
+async def webhook():
+    """Handle incoming Telegram updates"""
+    global application
     
-    app.add_handler(CommandHandler("start", start_command))
-    app.add_handler(CommandHandler("help", help_command))
-    app.add_handler(CommandHandler("signals", signals_command))
-    app.add_handler(CommandHandler("price", price_command))
-    app.add_handler(CommandHandler("subscribe", subscribe_command))
+    if application is None:
+        application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
+        application.add_handler(CommandHandler("start", start_command))
+        application.add_handler(CommandHandler("help", help_command))
+        application.add_handler(CommandHandler("signals", signals_command))
+        application.add_handler(CommandHandler("price", price_command))
+        application.add_handler(CommandHandler("subscribe", subscribe_command))
+        await application.initialize()
     
-    print("🤖 Bot starting...")
-    app.run_polling(allowed_updates=Update.ALL_TYPES, drop_pending_updates=True)
+    try:
+        update = Update.de_json(request.json(), application.bot)
+        await application.process_update(update)
+    except Exception as e:
+        print(f"Error processing update: {e}")
+    
+    return jsonify({'status': 'ok'})
 
-if __name__ == "__main__":
-    main()
+@app.route('/health', methods=['GET'])
+def health():
+    return jsonify({'status': 'healthy'})
+
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
