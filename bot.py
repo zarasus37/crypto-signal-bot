@@ -10,12 +10,9 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters, C
 import ccxt
 import pandas as pd
 import numpy as np
-from datetime import datetime
 
 # Config - Set these in your deployment platform
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
-BINANCE_API_KEY = os.getenv("BINANCE_API_KEY", "")
-BINANCE_SECRET = os.getenv("BINANCE_SECRET", "")
 
 # Initialize exchange
 exchange = ccxt.binance({
@@ -103,7 +100,7 @@ async def subscribe_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Contact @yourhandle to subscribe"
     )
 
-async def main():
+def main():
     app = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
     
     app.add_handler(CommandHandler("start", start_command))
@@ -113,7 +110,7 @@ async def main():
     app.add_handler(CommandHandler("subscribe", subscribe_command))
     
     print("🤖 Bot starting...")
-    await app.run_polling(allowed_updates=Update.ALL_TYPES)
+    app.run_polling(allowed_updates=Update.ALL_TYPES)
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
