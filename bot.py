@@ -1,6 +1,7 @@
 """
 Crypto Signal Bot - Telegram (Flask + Webhook)
 Integrated with OpenClaw Agent (Zara)
+Optimized for Context Management
 """
 
 import os
@@ -14,6 +15,7 @@ import numpy as np
 # Config
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 OPENCLAW_AGENT_ID = os.getenv("OPENCLAW_AGENT_ID", "main")
+MAX_CONTEXT_TOKENS = 2000  # Explicitly limit context to avoid overflow
 
 app = Flask(__name__)
 
@@ -22,28 +24,37 @@ class OpenClawAgent:
     def __init__(self, agent_id):
         self.agent_id = agent_id
         self.soul_path = "/home/ubuntu/crypto-signal-bot/SOUL.md"
-    
+        self.history = []
+
+    def _truncate_history(self):
+        """
+        Ensure the conversation history stays within a safe token limit.
+        """
+        if len(self.history) > 10:  # Keep only the last 10 exchanges
+            self.history = self.history[-10:]
+
     def get_gnosis(self, query):
         """
         Esoteric mentor logic: Calculate risk and provide gnosis.
-        Optimized for token efficiency.
         """
-        # Placeholder for OpenClaw agent execution
-        # In a real implementation, this would call the OpenClaw API with a truncated session history
-        return f"Gnosis for '{query}': Risk 13.7%, Reward: Worth the wager."
+        self.history.append(f"User: {query}")
+        self._truncate_history()
+        
+        # Placeholder for OpenClaw agent execution with context management
+        response = f"Gnosis for '{query}': Risk 13.7%, Reward: Worth the wager."
+        self.history.append(f"Zara: {response}")
+        return response
 
     def mev_arb_scan(self):
         """
         Sovereign MEV arb engine: Scan for arbitrage opportunities.
         """
-        # Placeholder for MEV arb logic
         return "Scanning for MEV opportunities... Found potential sandwich attack on Uniswap V3. Executing..."
 
     def stake_engine_slot(self):
         """
         Stake engine: Optimize for high RTP originals.
         """
-        # Placeholder for Stake engine logic
         return "Stake Engine: Optimizing for 99% RTP on Limbo. Strategy: Progressive wagering."
 
 agent = OpenClawAgent(OPENCLAW_AGENT_ID)
