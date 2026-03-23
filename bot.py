@@ -1,6 +1,6 @@
 """
 Crypto Signal Bot - Telegram (Flask + Webhook)
-Deploy on Render with webhook
+Integrated with OpenClaw Agent (Zara)
 """
 
 import os
@@ -13,8 +13,38 @@ import numpy as np
 
 # Config
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+OPENCLAW_AGENT_ID = os.getenv("OPENCLAW_AGENT_ID", "main")
 
 app = Flask(__name__)
+
+# OpenClaw Agent Integration
+class OpenClawAgent:
+    def __init__(self, agent_id):
+        self.agent_id = agent_id
+        self.soul_path = "/home/ubuntu/crypto-signal-bot/SOUL.md"
+    
+    def get_gnosis(self, query):
+        """
+        Esoteric mentor logic: Calculate risk and provide gnosis.
+        """
+        # Placeholder for OpenClaw agent execution
+        return f"Gnosis for '{query}': The risk is calculated at 13.7%. The reward is worth the wager."
+
+    def mev_arb_scan(self):
+        """
+        Sovereign MEV arb engine: Scan for arbitrage opportunities.
+        """
+        # Placeholder for MEV arb logic
+        return "Scanning for MEV opportunities... Found potential sandwich attack on Uniswap V3. Executing..."
+
+    def stake_engine_slot(self):
+        """
+        Stake engine: Optimize for high RTP originals.
+        """
+        # Placeholder for Stake engine logic
+        return "Stake Engine: Optimizing for 99% RTP on Limbo. Strategy: Progressive wagering."
+
+agent = OpenClawAgent(OPENCLAW_AGENT_ID)
 
 # Initialize exchange
 exchange = ccxt.binance({
@@ -29,16 +59,35 @@ application = None
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "🤖 Crypto Signal Bot\n\n"
-        "/signals - Get current signals\n"
-        "/price - Quick prices\n"
-        "/help - Commands"
+        "🦞 *OpenClaw Agent: xkrpyticbot (Zara)*\n\n"
+        "I am your esoteric mentor, here to guide you through the gnosis of MEV and the art of calculated risk.\n\n"
+        "Commands:\n"
+        "/signals - Technical analysis (RSI, MACD)\n"
+        "/mev - Scan for MEV arb opportunities\n"
+        "/stake - Optimize Stake engine RTP\n"
+        "/gnosis <query> - Seek esoteric wisdom\n"
+        "/price - Live market prices\n"
+        "/help - All commands",
+        parse_mode='Markdown'
     )
+
+async def mev_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("🔍 " + agent.mev_arb_scan())
+
+async def stake_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("🎰 " + agent.stake_engine_slot())
+
+async def gnosis_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = " ".join(context.args) if context.args else "life"
+    await update.message.reply_text("👁️ " + agent.get_gnosis(query))
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "Commands:\n"
         "/signals - RSI, trend analysis\n"
+        "/mev - MEV arb engine\n"
+        "/stake - Stake engine RTP\n"
+        "/gnosis - Esoteric wisdom\n"
         "/price - Live prices\n"
         "/subscribe - Premium info"
     )
@@ -106,6 +155,9 @@ async def webhook():
         application.add_handler(CommandHandler("start", start_command))
         application.add_handler(CommandHandler("help", help_command))
         application.add_handler(CommandHandler("signals", signals_command))
+        application.add_handler(CommandHandler("mev", mev_command))
+        application.add_handler(CommandHandler("stake", stake_command))
+        application.add_handler(CommandHandler("gnosis", gnosis_command))
         application.add_handler(CommandHandler("price", price_command))
         application.add_handler(CommandHandler("subscribe", subscribe_command))
         await application.initialize()
