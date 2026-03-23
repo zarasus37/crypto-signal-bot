@@ -26,9 +26,11 @@ class OpenClawAgent:
     def get_gnosis(self, query):
         """
         Esoteric mentor logic: Calculate risk and provide gnosis.
+        Optimized for token efficiency.
         """
         # Placeholder for OpenClaw agent execution
-        return f"Gnosis for '{query}': The risk is calculated at 13.7%. The reward is worth the wager."
+        # In a real implementation, this would call the OpenClaw API with a truncated session history
+        return f"Gnosis for '{query}': Risk 13.7%, Reward: Worth the wager."
 
     def mev_arb_scan(self):
         """
